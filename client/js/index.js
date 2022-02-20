@@ -7,11 +7,11 @@ let canvas, ctx;
 let playerNumber;
 let gameActive = false;
 
-// use in  development
-// const socket = io('http://localhost:8000');
+// USE IN DEVELOPMENT (LOCAL)
+const socket = io('http://localhost:8000');
 
-// use in production
-const socket = io('');
+// USE IN PRODUCTION (HEROKU)
+// const socket = io('');
 
 socket.on('init', (number) => {
   playerNumber = number;
@@ -97,7 +97,7 @@ function init() {
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   document.addEventListener('keydown', (e) => {
-    console.log(e.code);
+    // console.log(e.code);
     socket.emit('keydown', e.code);
   });
   gameActive = true;

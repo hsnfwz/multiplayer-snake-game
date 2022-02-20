@@ -1,3 +1,4 @@
+require('dotenv').config();
 const { Server } = require('socket.io');
 const path = require('path');
 const http = require('http');
@@ -34,7 +35,7 @@ const gameState = {};
 const clientRooms = {};
 
 // game constants
-const FRAME_RATE = 10;
+const FRAME_RATE = 60;
 const GRID_SIZE = 20;
 
 // game mechanics
@@ -43,60 +44,56 @@ function createGameState() {
     players: [
       {
         pos: {
-          x: 3,
-          y: 10,
+          x: -1,
+          y: -1,
         },
         vel: {
           x: 0,
           y: 0,
         },
-        // each object represents a snake's component
-        snake: [
-          { x: 1, y: 10 },
-          { x: 2, y: 10 },
-          { x: 3, y: 10 },
-        ],
+        size: {
+          w: 1,
+          h: 1,
+        }
       },
       {
         pos: {
-          x: 18,
-          y: 10,
+          x: 1,
+          y: 1,
         },
         vel: {
           x: 0,
           y: 0,
         },
-        // each object represents a snake's component
-        snake: [
-          { x: 19, y: 10 },
-          { x: 18, y: 10 },
-          { x: 17, y: 10 },
-        ],
+        size: {
+          w: 1,
+          h: 1,
+        }
       },
     ],
     food: {},
-    gridSize: GRID_SIZE, // number of squares in the game grid
+    // gridSize: GRID_SIZE, // number of squares in the game grid
   };
 }
 
 function randomFood(gameState) {
   const food = {
-    x: Math.floor(Math.random() * GRID_SIZE),
-    y: Math.floor(Math.random() * GRID_SIZE),
+    // x: Math.floor(Math.random() * GRID_SIZE),
+    // y: Math.floor(Math.random() * GRID_SIZE),
+    x: Math.floor(Math.random() * 5),
+    y: Math.floor(Math.random() * 5),
   };
 
-  // check if food is on top of the snake
-  for (let snakeCell of gameState.players[0].snake) {
-    if (snakeCell.x === food.x && snakeCell.y === food.y) {
-      return randomFood(gameState);
-    }
+  const playerOne = gameState.players[0];
+  const playerTwo = gameState.players[1];
+
+  // check for player and food collision
+  if (playerOne.pos.x === food.x && playerOne.pos.y === food.y) {
+    return randomFood(gameState);
   }
 
-  // check if food is on top of the snake
-  for (let snakeCell of gameState.players[1].snake) {
-    if (snakeCell.x === food.x && snakeCell.y === food.y) {
-      return randomFood(gameState);
-    }
+  if (playerTwo.pos.x === food.x && playerTwo.pos.y === food.y) {
+    return randomFood(gameState);
   }
 
   gameState.food = food;
@@ -105,10 +102,10 @@ function randomFood(gameState) {
 function getUpdatedVelocity(code) {
   switch (code) {
     case 'ArrowUp': {
-      return { x: 0, y: -1 };
+      return { x: 0, y: 1 };
     }
     case 'ArrowDown': {
-      return { x: 0, y: 1 };
+      return { x: 0, y: -1 };
     }
     case 'ArrowLeft': {
       return { x: -1, y: 0 };
@@ -129,70 +126,47 @@ function gameLoop(gameState) {
   const playerOne = gameState.players[0];
   const playerTwo = gameState.players[1];
 
-  playerOne.pos.x += playerOne.vel.x;
-  playerOne.pos.y += playerOne.vel.y;
+  // // check if out of bounds
+  // if (playerOne.pos.x < 0 || playerOne.pos.x > GRID_SIZE || playerOne.pos.y < 0 || playerOne.pos.y > GRID_SIZE) {
+  //   return 2; // player 2 wins, player 1 loses
+  // }
 
-  playerTwo.pos.x += playerTwo.vel.x;
-  playerTwo.pos.y += playerTwo.vel.y;
+  // // check if out of bounds
+  // if (playerTwo.pos.x < 0 || playerTwo.pos.x > GRID_SIZE || playerTwo.pos.y < 0 || playerTwo.pos.y > GRID_SIZE) {
+  //   return 1; // player 1 wins, player 2 loses
+  // }
 
-  // check if out of bounds
-  if (playerOne.pos.x < 0 || playerOne.pos.x > GRID_SIZE || playerOne.pos.y < 0 || playerOne.pos.y > GRID_SIZE) {
-    return 2; // player 2 wins, player 1 loses
-  }
-
-  // check if out of bounds
-  if (playerTwo.pos.x < 0 || playerTwo.pos.x > GRID_SIZE || playerTwo.pos.y < 0 || playerTwo.pos.y > GRID_SIZE) {
-    return 1; // player 1 wins, player 2 loses
-  }
-
-  // check if player ate food
+  // check for player and food collision
   if (gameState.food.x === playerOne.pos.x && gameState.food.y === playerOne.pos.y) {
-    // snake grows
-    playerOne.snake.push({ ...playerOne.pos });
-    playerOne.pos.x += playerOne.vel.x;
-    playerOne.pos.y += playerOne.vel.y;
+    // player grows
+    playerOne.size.w += 0.2;
+    playerOne.size.h += 0.2;
 
     // display new food after eating previous food
     randomFood(gameState);
   }
 
-  // check if player ate food
   if (gameState.food.x === playerTwo.pos.x && gameState.food.y === playerTwo.pos.y) {
-    // snake grows
-    playerTwo.snake.push({ ...playerTwo.pos });
-    playerTwo.pos.x += playerTwo.vel.x;
-    playerTwo.pos.y += playerTwo.vel.y;
+    // player grows
+    playerTwo.size.w += 0.2;
+    playerTwo.size.h += 0.2;
 
     // display new food after eating previous food
     randomFood(gameState);
   }
 
-  // check if player is moving
-  if (playerOne.vel.x || playerOne.vel.y) {
-    // check if snake collided with itself
-    for (let snakeCell of playerOne.snake) {
-      if (snakeCell.x === playerOne.pos.x && snakeCell.y === playerOne.pos.y) {
-        return 2; // player 2 wins, player 1 loses
-      }
-    }
+  console.log('[Player One Size]', playerOne.size);
+  console.log('[Player Two Size]', playerTwo.size);
 
-    // move the snake
-    playerOne.snake.push({ ...playerOne.pos }); // adds 1 square to the snake
-    playerOne.snake.shift(); // removes the first square of the snake
+  // check which player wins
+  if (playerOne.size.w >= 2) {
+    console.log('Player 1 wins!')
+    return 1; // player 1 wins
   }
 
-  // check if player is moving
-  if (playerTwo.vel.x || playerTwo.vel.y) {
-    // check if snake collided with itself
-    for (let snakeCell of playerTwo.snake) {
-      if (snakeCell.x === playerTwo.pos.x && snakeCell.y === playerTwo.pos.y) {
-        return 1; // player 1 wins, player 2 loses
-      }
-    }
-
-    // move the snake
-    playerTwo.snake.push({ ...playerTwo.pos }); // adds 1 square to the snake
-    playerTwo.snake.shift(); // removes the first square of the snake
+  if (playerTwo.size.w >= 2) {
+    console.log('Player 2 wins!')
+    return 2; // player 1 wins, player 2 loses
   }
 
   return false; // no winner
@@ -236,13 +210,14 @@ io.on('connection', (client) => {
 
     const vel = getUpdatedVelocity(code);
 
+    // update specific player movement
     if (vel) {
-      gameState[roomName].players[client.number - 1].vel = vel;
+      gameState[roomName].players[client.number - 1].pos.x += vel.x;
+      gameState[roomName].players[client.number - 1].pos.y += vel.y;
     }
   });
 
   client.on('newGame', () => {
-    console.log('NEW GAME...')
     let roomName = uuidv4();
     clientRooms[client.id] = roomName;
     client.emit('gameCode', roomName);
@@ -255,7 +230,6 @@ io.on('connection', (client) => {
   });
 
   client.on('joinGame', async (gameCode) => {
-    console.log('JOIN GAME...')
     const room = io.sockets.adapter.rooms.get(gameCode);
     const roomValue = room.values().next().value;
  

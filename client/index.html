@@ -1,16 +1,20 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <!-- Metadata -->
     <meta charset="UTF-8">
     <title>Multiplayer Game</title>
-    <link rel="stylesheet" href="./stylesheet.css">
+
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="css/stylesheet.css">
+
+    <!-- JavaScript -->
+    <!-- Socket.io -->
     <script src="https://cdn.socket.io/4.4.1/socket.io.min.js" integrity="sha384-fKnu0iswBIqkjxrhQCTZ7qlLHOFEgNkRmK2vaO/LbTZSXdJfAu6ewRBdwHPhBo/H" crossorigin="anonymous"></script>
-    <script src="index.js" defer></script>
-    <style>
-      #game-screen {
-        display: none;
-      }
-    </style>
+    <!-- Three.js -->
+    <script type="module" src="js/three.js" defer></script>
+    <!-- Index.js -->
+    <!-- <script src="js/index.js" defer></script> -->
   </head>
   <body>
     <div id="initial-screen">
@@ -23,9 +27,7 @@
           value="Create New Game"
         />
       </form>
-
       <div>OR</div>
-
       <form id="join-game-form">
         <input
           type="text"
@@ -40,13 +42,9 @@
         />
       </form>
     </div>
-
     <div id="game-screen">
-      <div id="canvas-container">
-        <h1>Your game code is: <span id="game-code-display"></span></h1>
-
-        <canvas id="canvas"></canvas>
-      </div>
+      <h1>Your game code is: <span id="game-code-display"></span></h1>
+      <div id="root"></div>
     </div>
   </body>
 </html>
