@@ -8,7 +8,7 @@ const PORT = process.env.PORT || 8000;
 
 const app = express();
 
-app.use(express.static(path.join(__dirname, 'client/index.html')));
+app.use(express.static(path.join(__dirname, 'client')));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
