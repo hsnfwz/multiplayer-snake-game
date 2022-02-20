@@ -7,7 +7,11 @@ let canvas, ctx;
 let playerNumber;
 let gameActive = false;
 
-const socket = io('http://localhost:8000');
+// use in  development
+// const socket = io('http://localhost:8000');
+
+// use in production
+const socket = io('');
 
 socket.on('init', (number) => {
   playerNumber = number;
