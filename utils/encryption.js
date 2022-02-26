@@ -1,3 +1,4 @@
+// libraries
 const crypto = require('crypto');
 
 const generatePassword = async (password) => {

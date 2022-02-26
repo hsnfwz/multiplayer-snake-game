@@ -15,7 +15,7 @@ createAccountButton.addEventListener('click', async (event) => {
   const password = document.querySelector('#create-account-password').value;
 
   try {
-    const endpoint = 'http://localhost:8000/authentication/create-account';
+    const endpoint = '/authentication/create-account';
     const options = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -40,7 +40,7 @@ signInButton.addEventListener('click', async (event) => {
   const password = document.querySelector('#sign-in-password').value;
 
   try {
-    const endpoint = 'http://localhost:8000/authentication/sign-in';
+    const endpoint = '/authentication/sign-in';
     const options = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -65,7 +65,7 @@ resetPasswordButton.addEventListener('click', async (event) => {
   const password = document.querySelector('#reset-password-new-password').value;
 
   try {
-    const endpoint = 'http://localhost:8000/authentication/reset-password';
+    const endpoint = '/authentication/reset-password';
     const options = {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -87,7 +87,7 @@ signOutButton.addEventListener('click', async (event) => {
   event.preventDefault();
 
   try {
-    const endpoint = 'http://localhost:8000/authentication/sign-out';
+    const endpoint = '/authentication/sign-out';
     const options = {
       method: 'DELETE',
       credentials: 'include',

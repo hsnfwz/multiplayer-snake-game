@@ -47,9 +47,6 @@ app.use('/user', userRoutes);
 // app - server
 server.listen(PORT, () => console.log(`[SERVER] http://localhost:${PORT}`));
 
-
-
-
 /* GAME STARTS HERE */
 
 io.on('connection', (client) => {
