@@ -2,10 +2,10 @@
 import * as THREE from 'https://cdn.skypack.dev/pin/three@v0.137.5-HJEdoVYPhjkiJWkt6XIa/mode=imports/optimized/three.js';
 
 /* USE IN DEVELOPMENT (LOCAL) */
-// const socket = io('http://localhost:8000');
+const socket = io('http://localhost:8000');
 
 /* USE IN PRODUCTION (HEROKU) */
-const socket = io('');
+// const socket = io('');
 
 const BG_COLOR = 0x000000; // black
 const SNAKE_COLOR_1 = 0x1E88E5; // blue

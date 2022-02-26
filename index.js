@@ -2,7 +2,6 @@
 require('dotenv').config();
 
 const path = require('path');
-// const cors = require('cors');
 const http = require('http');
 const express = require('express');
 const expressSession = require('express-session');
@@ -19,13 +18,10 @@ const userRoutes = require('./routes/user-routes');
 
 // constants
 const PORT = process.env.PORT || 8000;
-// const CORS = { origin: [''], credentials: true };
-
 
 // server
 const app = express();
 const server = http.createServer(app);
-// const io = new Server(server, { cors: CORS });
 const io = new Server(server);
 
 // app - client
