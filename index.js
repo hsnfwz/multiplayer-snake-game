@@ -1,32 +1,116 @@
+// libraries
 require('dotenv').config();
-const { Server } = require('socket.io');
+
 const path = require('path');
 const http = require('http');
 const express = require('express');
+const expressSession = require('express-session');
+const pgSession = require('connect-pg-simple')(expressSession);
+const { Server } = require('socket.io');
 const { v4: uuidv4 } = require('uuid');
 
+// config
+const pool = require('./config/pg');
+
+// routes
+const authenticationRoutes = require('./routes/authentication-routes');
+const userRoutes = require('./routes/user-routes');
+
+// constants
 const PORT = process.env.PORT || 8000;
 
+// server
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
 
-app.use(express.static(path.join(__dirname, 'client')));
+// app - client
+app.use(express.static(path.join(__dirname, 'public')));
+
+// app - middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-const server = http.createServer(app);
+// app - session
+app.use(expressSession({
+  store: new pgSession({ pool, createTableIfMissing: true }),
+  secret: process.env.SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  cookie: { maxAge: 14 * 24 * 60 * 60 * 1000 },
+}));
 
-const io = new Server({
-  cors: {
-    origin: ['http://localhost:5500', 'http://127.0.0.1:5500'],
-    credentials: true,
-  }
-});
+// app - routes
+app.use('/authentication', authenticationRoutes);
+app.use('/user', userRoutes);
 
-app.get('/', (req, res, next) => {
-  res.render('Welcome to the server!');
-});
-
+// app - server
 server.listen(PORT, () => console.log(`[SERVER] http://localhost:${PORT}`));
+
+/* GAME STARTS HERE */
+
+io.on('connection', (client) => {
+  console.log('[CONNECTED]'); // why does this run twice?
+
+  client.on('keydown', (code) => {
+    const roomName = clientRooms[client.id];
+
+    if (!roomName) {
+      return;
+    }
+
+    const vel = getUpdatedVelocity(code);
+
+    // update specific player movement
+    if (vel) {
+      gameState[roomName].players[client.number - 1].pos.x += vel.x;
+      gameState[roomName].players[client.number - 1].pos.y += vel.y;
+    }
+  });
+
+  client.on('newGame', () => {
+    console.log('[NEW GAME]')
+    let roomName = uuidv4();
+    clientRooms[client.id] = roomName;
+    client.emit('gameCode', roomName);
+    
+    gameState[roomName] = initGame();
+
+    client.join(roomName);
+    client.number = 1; // player one
+    client.emit('init', 1);
+  });
+
+  client.on('joinGame', async (gameCode) => {
+    console.log('[JOIN GAME]')
+    const room = io.sockets.adapter.rooms.get(gameCode);
+    const roomValue = room.values().next().value;
+  
+    let numClients;
+    if (roomValue) {
+      const roomSize = room.size;
+      numClients = roomSize;
+    }
+
+    if (numClients === 0) { // no players
+      client.emit('unknownGame');
+      return;
+    } else if (numClients > 1) { // 2 players (max for this game) reached
+      client.emit('tooManyPlayers');
+      return;
+    }
+
+    // exactly 1 player is waiting in the room
+    clientRooms[client.id] = gameCode;
+
+    client.join(gameCode);
+    client.number = 2; // player 2
+    client.emit('init', 2);
+    
+    // start game once max players have joined
+    startGameInterval(gameCode);
+  });
+});
 
 /* GAME STARTS HERE */
 
@@ -199,64 +283,3 @@ function initGame() {
   randomFood(_gameState);
   return _gameState;
 }
-
-io.on('connection', (client) => {
-  client.on('keydown', (code) => {
-    const roomName = clientRooms[client.id];
-
-    if (!roomName) {
-      return;
-    }
-
-    const vel = getUpdatedVelocity(code);
-
-    // update specific player movement
-    if (vel) {
-      gameState[roomName].players[client.number - 1].pos.x += vel.x;
-      gameState[roomName].players[client.number - 1].pos.y += vel.y;
-    }
-  });
-
-  client.on('newGame', () => {
-    let roomName = uuidv4();
-    clientRooms[client.id] = roomName;
-    client.emit('gameCode', roomName);
-    
-    gameState[roomName] = initGame();
-
-    client.join(roomName);
-    client.number = 1; // player one
-    client.emit('init', 1);
-  });
-
-  client.on('joinGame', async (gameCode) => {
-    const room = io.sockets.adapter.rooms.get(gameCode);
-    const roomValue = room.values().next().value;
- 
-    let numClients;
-    if (roomValue) {
-      const roomSize = room.size;
-      numClients = roomSize;
-    }
-
-    if (numClients === 0) { // no players
-      client.emit('unknownGame');
-      return;
-    } else if (numClients > 1) { // 2 players (max for this game) reached
-      client.emit('tooManyPlayers');
-      return;
-    }
-
-    // exactly 1 player is waiting in the room
-    clientRooms[client.id] = gameCode;
-
-    client.join(gameCode);
-    client.number = 2; // player 2
-    client.emit('init', 2);
-    
-    // start game once max players have joined
-    startGameInterval(gameCode);
-  });
-});
-
-io.listen(server);

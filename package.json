@@ -3,8 +3,11 @@
   "version": "1.0.0",
   "main": "index.js",
   "dependencies": {
+    "connect-pg-simple": "^7.0.0",
     "dotenv": "^16.0.0",
     "express": "^4.17.3",
+    "express-session": "^1.17.2",
+    "pg": "^8.7.3",
     "socket.io": "^4.4.1",
     "uuid": "^8.3.2"
   },
