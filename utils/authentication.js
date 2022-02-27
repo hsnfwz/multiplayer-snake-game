@@ -1,3 +1,6 @@
+
+/* FUNCTIONS */
+
 const isAuthenticated = (req, res, next) => {
   const isAuthenticated = req.session && req.session.user;
 

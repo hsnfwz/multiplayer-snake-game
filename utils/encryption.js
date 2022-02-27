@@ -1,5 +1,8 @@
-// libraries
+/* LIBRARIES */
+
 const crypto = require('crypto');
+
+/* FUNCTIONS */
 
 const generatePassword = async (password) => {
   const salt = crypto.randomBytes(32).toString('hex');

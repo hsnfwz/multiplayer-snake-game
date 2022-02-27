@@ -1,7 +1,9 @@
-// Find the latest version by visiting https://cdn.skypack.dev/three
-import * as THREE from 'https://cdn.skypack.dev/pin/three@v0.137.5-HJEdoVYPhjkiJWkt6XIa/mode=imports/optimized/three.js';
+/* MODULES */
 
-const socket = io();
+import * as THREE from 'https://cdn.skypack.dev/pin/three@v0.137.5-HJEdoVYPhjkiJWkt6XIa/mode=imports/optimized/three.js';
+import GLOBAL_STATE from '../global.js';
+
+/* VARIABLES */
 
 const BG_COLOR = 0x000000; // black
 const SNAKE_COLOR_1 = 0x1E88E5; // blue
@@ -11,116 +13,30 @@ const FOOD_COLOR = 0xE53935; // red
 let CANVAS_WIDTH = window.innerWidth; // in pixels
 let CANVAS_HEIGHT = window.innerHeight; // in pixels
 
-let gameActive = false;
-let playerNumber;
 let scene, camera, renderer;
 
-// Sockets
-socket.on('init', (number) => {
-  playerNumber = number;
-});
+/* FUNCTIONS */
 
-socket.on('gameState', (gameState) => {
-  console.log('[GAME STATE]');
-  if (!gameActive) {
-    return;
-  }
-
-  gameState = JSON.parse(gameState);
-  requestAnimationFrame(() => animate(gameState));
-});
-
-socket.on('gameOver', (data) => {
-  if (!gameActive) {
-    return;
-  }
-
-  const _data = JSON.parse(data);
-
-  if (_data.winner === playerNumber) {
-    alert('You Win!');
-  } else {
-    alert('You Lose.');
-  }
-  gameActive = false;
-});
-
-socket.on('gameCode', (gameCode) => {
-  gameCodeDisplay.innerText = gameCode;
-});
-
-socket.on('unknownGame', () => {
-  reset();
-  alert('Unknown game code');
-});
-
-socket.on('tooManyPlayers', () => {
-  reset();
-  alert('Too many players. Game in progress');
-});
-
-// DOM
-const gameScreen = document.querySelector('#game-screen');
-const initialScreen = document.querySelector('#initial-screen');
-const newGameButton = document.querySelector('#new-game-button');
-const joinGameButton = document.querySelector('#join-game-button');
-const gameCodeInput = document.querySelector('#game-code-input');
-const gameCodeDisplay = document.querySelector('#game-code-display');
-const root = document.querySelector('#root');
-
-newGameButton.addEventListener('click', (e) => {
-  e.preventDefault();
-  socket.emit('newGame');
-  init();
-});
-
-joinGameButton.addEventListener('click', (e) => {
-  e.preventDefault();
-  const gameCode = gameCodeInput.value;
-  socket.emit('joinGame', gameCode);
-  init();
-});
-
-// Functions
-function reset() {
-  playerNumber = null;
-  gameCodeInput.value = '';
-  gameCodeDisplay.innerText = '';
-  initialScreen.style.display = 'block';
-  gameScreen.style.display = 'none';
-}
-
-function init() {
-  initialScreen.style.display = 'none';
-  gameScreen.style.display = 'block';
-
-  // Creating the scene
+const initializeGame = () => {
+  // creating the scene
   scene = new THREE.Scene();
   scene.background = new THREE.Color(BG_COLOR);
 
   camera = new THREE.PerspectiveCamera(75, CANVAS_WIDTH / CANVAS_HEIGHT, 0.1, 1000);
 
   renderer = new THREE.WebGLRenderer();
-  renderer.setSize(CANVAS_WIDTH, CANVAS_HEIGHT); // width, height in pixels
-  // renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+  renderer.setSize(CANVAS_WIDTH, CANVAS_HEIGHT);
 
-  root.appendChild(renderer.domElement);
+  const rootScreenElement = document.querySelector('#root-screen');
+  rootScreenElement.appendChild(renderer.domElement);
 
-  // camera.position.x = 0;
-  // camera.position.y = 0;
   camera.position.z = 5;
 
-  // Listen to keydown event
-  document.addEventListener('keydown', (e) => {
-    // console.log(e.code);
-    socket.emit('keydown', e.code);
-  });
-
-  gameActive = true;
+  GLOBAL_STATE.isGameActive = true;
 }
 
 // Rendering the scene
-function animate(gameState) {
+const animateGame = (gameState) => {
   // first remove any previous mesh objects
   const previousPlayerOneMesh = scene.getObjectByName('playerOneMesh');
   if (previousPlayerOneMesh) {
@@ -179,6 +95,10 @@ window.addEventListener('resize', () => {
 
     // update renderer
     renderer.setSize(CANVAS_WIDTH, CANVAS_HEIGHT);
-    // renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   }
 });
+
+export {
+  initializeGame,
+  animateGame,
+};

@@ -1,14 +1,10 @@
+/* MODULES */
 
-/* Elements */
+import GLOBAL_STATE from '../global.js';
 
-const createAccountButton = document.querySelector('#create-account-button');
-const signInButton = document.querySelector('#sign-in-button');
-const resetPasswordButton = document.querySelector('#reset-password-button');
-const signOutButton = document.querySelector('#sign-out-button');
+/* FUNCTIONS */
 
-/* Events */
-
-createAccountButton.addEventListener('click', async (event) => {
+const createAccountEvent = async (event) => {
   event.preventDefault();
 
   const email = document.querySelector('#create-account-email').value;
@@ -24,16 +20,17 @@ createAccountButton.addEventListener('click', async (event) => {
     }
 
     const response = await fetch(endpoint, options);
-
     const data = await response.json();
 
     console.log('[DATA]:', data);
+
+    GLOBAL_STATE.isAccountCreated = data.isAccountCreated;
   } catch (error) {
     console.log(error);
   }
-});
+}
 
-signInButton.addEventListener('click', async (event) => {
+const signInEvent = async (event) => {
   event.preventDefault();
 
   const email = document.querySelector('#sign-in-email').value;
@@ -49,16 +46,17 @@ signInButton.addEventListener('click', async (event) => {
     }
 
     const response = await fetch(endpoint, options);
-
     const data = await response.json();
 
     console.log('[DATA]:', data);
+
+    GLOBAL_STATE.isAuthenticated = data.isAuthenticated;
   } catch (error) {
     console.log(error);
   }
-});
+}
 
-resetPasswordButton.addEventListener('click', async (event) => {
+const resetPasswordEvent = async (event) => {
   event.preventDefault();
 
   const email = document.querySelector('#reset-password-email').value;
@@ -74,16 +72,17 @@ resetPasswordButton.addEventListener('click', async (event) => {
     }
 
     const response = await fetch(endpoint, options);
-
     const data = await response.json();
 
     console.log('[DATA]:', data);
+
+    GLOBAL_STATE.isPasswordReset = data.isPasswordReset;
   } catch (error) {
     console.log(error);
   }
-});
+}
 
-signOutButton.addEventListener('click', async (event) => {
+const signOutEvent = async (event) => {
   event.preventDefault();
 
   try {
@@ -94,11 +93,19 @@ signOutButton.addEventListener('click', async (event) => {
     }
 
     const response = await fetch(endpoint, options);
-
     const data = await response.json();
 
     console.log('[DATA]:', data);
+
+    GLOBAL_STATE.isAuthenticated = data.isAuthenticated;
   } catch (error) {
     console.log(error);
   }
-});
+}
+
+export {
+  createAccountEvent,
+  signInEvent,
+  resetPasswordEvent,
+  signOutEvent,
+};

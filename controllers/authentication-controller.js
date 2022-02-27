@@ -1,8 +1,12 @@
-// config
+/* CONFIG */
+
 const pool = require('../config/pg');
 
-// utils
+/* UTILS */
+
 const encryption = require('../utils/encryption');
+
+/* FUNCTIONS */
 
 const authenticationCreateAccount = (req, res, next) => {
   const { email, password } = req.body;

@@ -1,11 +1,16 @@
-// libraries
+/* LIBRARIES */
+
 const express = require('express');
 
-// utils
+/* UTILS */
+
 const authentication = require('../utils/authentication');
 
-// controllers
+/* CONTROLLERS */
+
 const userController = require('../controllers/user-controller');
+
+/* ROUTES */
 
 const router = express.Router();
 
